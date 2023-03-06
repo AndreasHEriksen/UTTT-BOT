@@ -31,8 +31,7 @@ import javafx.collections.FXCollections;
 import javafx.scene.layout.AnchorPane;
 
 public class AppController implements Initializable {
-
-    public JFXButton btnTrash;
+    public JFXButton btnTrash; 
     public JFXButton btnDiamond;
     @FXML
     private JFXTextField txtHumanNameLeft;

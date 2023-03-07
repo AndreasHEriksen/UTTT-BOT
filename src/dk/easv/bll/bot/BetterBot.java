@@ -28,7 +28,7 @@ public class BetterBot implements IBot {
     @Override
     public IMove doMove(IGameState state) {
         List<IMove> moves = state.getField().getAvailableMoves();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 81; i++) {
             GameSimulator2 simulator = createSimulator(state);
             rand = new Random();
             IGameState gs = simulator.currentState;
@@ -36,14 +36,15 @@ public class BetterBot implements IBot {
             IMove randomMove = moves.get(rand.nextInt(moves.size()));
             simulator.updateGame(randomMove);
             if(simulator.getGameOver() == GameOverState.Win) {
-                int countered = 0;
-                countered++;
-                System.out.println(countered);
+                //System.out.println("CounterAttack");
                 return randomMove;
-                }
             }
+            if (simulator.macroWin) {
+                //System.out.println("Max Macro");
+                return randomMove;
+            }
+        }
         if (moves.size() > 0) {
-            System.out.println("Just Random");
             return moves.get(rand.nextInt(moves.size())); /* get random move from available moves */
         }
         return null;
@@ -63,7 +64,10 @@ public class BetterBot implements IBot {
     class GameSimulator2 {
         private final IGameState currentState;
         private int currentPlayer = 0; //player0 == 0 && player1 == 1
+
+        private boolean macroWin = false;
         private volatile GameOverState gameOver = GameOverState.Active;
+
 
 
         public void setGameOver(GameOverState state) {
@@ -138,8 +142,10 @@ public class BetterBot implements IBot {
 
                 String[][] board = getCurrentState().getField().getBoard();
 
-                if (isWin(board, move, "" + currentPlayer))
+                if (isWin(board, move, "" + currentPlayer)){
                     macroBoard[macroX][macroY] = currentPlayer + "";
+                    macroWin = true;
+                }
                 else if (isTie(board, move))
                     macroBoard[macroX][macroY] = "TIE";
 

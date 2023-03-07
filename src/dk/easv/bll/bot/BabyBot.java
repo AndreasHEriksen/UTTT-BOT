@@ -50,7 +50,7 @@ public class BabyBot implements IBot{
     }
     protected int[][] preferredMoves = {
             {2, 0}, //Center
-            {1, 1}, {2, 2}, {0, 2}, {0, 0},  //Corners ordered across
+            {2, 1}, {2, 2}, {0, 2}, {0, 0},  //Corners ordered across
             {0, 1}, {2, 1}, {1, 0}, {1, 2},{1,1}};
 
     protected int[][] preferredMoves2 = {

@@ -28,21 +28,21 @@ public class BetterBot implements IBot {
     @Override
     public IMove doMove(IGameState state) {
         List<IMove> moves = state.getField().getAvailableMoves();
-        GameSimulator2 simulator = createSimulator(state);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 500; i++) {
+            GameSimulator2 simulator = createSimulator(state);
             rand = new Random();
             IGameState gs = simulator.currentState;
             moves = gs.getField().getAvailableMoves();
             IMove randomMove = moves.get(rand.nextInt(moves.size()));
             simulator.updateGame(randomMove);
-            if(moves.size() > 0);
-            {
-                return randomMove;
+            if(simulator.getGameOver() == GameOverState.Win) {
+                    return randomMove;
+                }
             }
-
+        if (moves.size() > 0) {
+            return moves.get(rand.nextInt(moves.size())); /* get random move from available moves */
         }
-        IMove randomMove = moves.get(rand.nextInt(moves.size()));
-        return randomMove;
+        return null;
     }
 
     @Override

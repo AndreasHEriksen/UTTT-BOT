@@ -9,14 +9,13 @@ import dk.easv.bll.move.Move;
 import java.util.List;
 import java.util.Random;
 
-public class BestBot implements IBot{
-    private static final String BOTNAME = "BestBot";
+public class BetterBotFake implements IBot{
+    private static final String BOTNAME = "BetterBotFake";
     private Random rand;
-    private boolean firstMove = true;
 
-    private BestBot.GameSimulator2 createSimulator(IGameState state) {
-        BestBot.GameSimulator2 simulator = new BestBot.GameSimulator2(new GameState());
-        simulator.setGameOver(BestBot.GameOverState.Active);
+    private BetterBotFake.GameSimulator3 createSimulator(IGameState state) {
+        BetterBotFake.GameSimulator3 simulator = new BetterBotFake.GameSimulator3(new GameState());
+        simulator.setGameOver(BetterBotFake.GameOverState.Active);
         simulator.setCurrentPlayer(state.getMoveNumber() % 2);
         simulator.getCurrentState().setRoundNumber(state.getRoundNumber());
         simulator.getCurrentState().setMoveNumber(state.getMoveNumber());
@@ -24,27 +23,18 @@ public class BestBot implements IBot{
         simulator.getCurrentState().getField().setMacroboard(state.getField().getMacroboard());
         return simulator;
     }
-    protected int[][] preferredMoves = {
-            {1, 1}, //Center
-            {0, 0}, {0, 1}, {0, 2}, {1, 0},  //Corners ordered across
-            {1, 2}, {2, 0}, {2, 1}, {2, 2},{1,1}};
-
-    protected int[][] preferredMoves2 = {
-            {2, 2}, //Center
-            {1, 1}, {2, 0}, {0, 2}, {0, 0},  //Corners ordered across
-            {0, 1}, {2, 1}, {1, 0}, {1, 2},{1,1}};
 
     @Override
     public IMove doMove(IGameState state) {
         List<IMove> moves = state.getField().getAvailableMoves();
         for (int i = 0; i < 81; i++) {
-            BestBot.GameSimulator2 simulator = createSimulator(state);
+            BetterBotFake.GameSimulator3 simulator = createSimulator(state);
             rand = new Random();
             IGameState gs = simulator.currentState;
             moves = gs.getField().getAvailableMoves();
             IMove randomMove = moves.get(rand.nextInt(moves.size()));
             simulator.updateGame(randomMove);
-            if(simulator.getGameOver() == BestBot.GameOverState.Win) {
+            if(simulator.getGameOver() == BetterBotFake.GameOverState.Win) {
                 //System.out.println("CounterAttack");
                 return randomMove;
             }
@@ -70,18 +60,20 @@ public class BestBot implements IBot{
         Tie
     }
 
-    class GameSimulator2 {
+    class GameSimulator3 {
         private final IGameState currentState;
-        private boolean macroWin = false;
         private int currentPlayer = 0; //player0 == 0 && player1 == 1
-        private volatile BestBot.GameOverState gameOver = BestBot.GameOverState.Active;
+
+        private boolean macroWin = false;
+        private volatile BetterBotFake.GameOverState gameOver = BetterBotFake.GameOverState.Active;
 
 
-        public void setGameOver(BestBot.GameOverState state) {
+
+        public void setGameOver(BetterBotFake.GameOverState state) {
             gameOver = state;
         }
 
-        public BestBot.GameOverState getGameOver() {
+        public BetterBotFake.GameOverState getGameOver() {
             return gameOver;
         }
 
@@ -92,7 +84,7 @@ public class BestBot implements IBot{
         public IGameState getCurrentState() {
             return currentState;
         }
-        GameSimulator2(IGameState currentState) {
+        GameSimulator3(IGameState currentState) {
             this.currentState = currentState;
         }
 
@@ -149,16 +141,18 @@ public class BestBot implements IBot{
 
                 String[][] board = getCurrentState().getField().getBoard();
 
-                if (isWin(board, move, "" + currentPlayer))
+                if (isWin(board, move, "" + currentPlayer)){
                     macroBoard[macroX][macroY] = currentPlayer + "";
+                    macroWin = true;
+                }
                 else if (isTie(board, move))
                     macroBoard[macroX][macroY] = "TIE";
 
                 //Check macro win
                 if (isWin(macroBoard, new Move(macroX, macroY), "" + currentPlayer))
-                    gameOver = BestBot.GameOverState.Win;
+                    gameOver = BetterBotFake.GameOverState.Win;
                 else if (isTie(macroBoard, new Move(macroX, macroY)))
-                    gameOver = BestBot.GameOverState.Tie;
+                    gameOver = BetterBotFake.GameOverState.Tie;
             }
         }
 
@@ -189,7 +183,6 @@ public class BestBot implements IBot{
             }
             return true;
         }
-
         public boolean isWin(String[][] board, IMove move, String currentPlayer) {
             int localX = move.getX() % 3;
             int localY = move.getY() % 3;

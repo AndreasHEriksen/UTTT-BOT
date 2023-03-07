@@ -41,6 +41,7 @@ public class LocalPrioritisedListBot implements IBot {
                     {
                         return new Move(x,y);
                     }
+
                 }
             }
         }

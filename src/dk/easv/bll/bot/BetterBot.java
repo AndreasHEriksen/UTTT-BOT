@@ -28,7 +28,7 @@ public class BetterBot implements IBot {
     @Override
     public IMove doMove(IGameState state) {
         List<IMove> moves = state.getField().getAvailableMoves();
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 1000; i++) {
             GameSimulator2 simulator = createSimulator(state);
             rand = new Random();
             IGameState gs = simulator.currentState;
@@ -36,10 +36,14 @@ public class BetterBot implements IBot {
             IMove randomMove = moves.get(rand.nextInt(moves.size()));
             simulator.updateGame(randomMove);
             if(simulator.getGameOver() == GameOverState.Win) {
-                    return randomMove;
+                int countered = 0;
+                countered++;
+                System.out.println(countered);
+                return randomMove;
                 }
             }
         if (moves.size() > 0) {
+            System.out.println("Just Random");
             return moves.get(rand.nextInt(moves.size())); /* get random move from available moves */
         }
         return null;

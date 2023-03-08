@@ -29,6 +29,47 @@ public class BetterBot implements IBot {
     public IMove doMove(IGameState state) {
         List<IMove> moves = state.getField().getAvailableMoves();
         for (int i = 0; i < 81; i++) {
+            IMove bestMove = doSimulation(state);
+            if(bestMove!=null){
+                return bestMove;
+            }
+        }
+        for (int i = 0; i < 81; i++) {
+            IMove bestMove = doSimulation(state);
+            if(bestMove!=null){
+                return bestMove;
+            }
+                for (int j = 0; j < 81; j++) {
+                    IMove secondBestMove = doSimulation(state);
+                    if(bestMove!=null){
+                        return secondBestMove;
+                    }
+                }
+        }
+        for (int i = 0; i < 81; i++) {
+            IMove bestMove = doSimulation(state);
+            if(bestMove!=null){
+                return bestMove;
+            }
+                for (int j = 0; j < 81; j++) {
+                    IMove secondBestMove = doSimulation(state);
+                    if(bestMove!=null){
+                        return secondBestMove;
+                    }
+                }
+            for (int j = 0; j < 81; j++) {
+                IMove thirdMove = doSimulation(state);
+                if(thirdMove !=null){
+                    return thirdMove;
+                }
+            }
+            }
+        return moves.get(rand.nextInt(moves.size())); /* get random move from available moves */
+
+    }
+
+    private IMove doSimulation(IGameState state){
+            List<IMove> moves = state.getField().getAvailableMoves();
             GameSimulator2 simulator = createSimulator(state);
             rand = new Random();
             IGameState gs = simulator.currentState;
@@ -36,19 +77,16 @@ public class BetterBot implements IBot {
             IMove randomMove = moves.get(rand.nextInt(moves.size()));
             simulator.updateGame(randomMove);
             if(simulator.getGameOver() == GameOverState.Win) {
-                //System.out.println("CounterAttack");
                 return randomMove;
             }
-            if (simulator.macroWin) {
-                //System.out.println("Max Macro");
+            else if (simulator.macroWin) {
                 return randomMove;
             }
-        }
-        if (moves.size() > 0) {
-            return moves.get(rand.nextInt(moves.size())); /* get random move from available moves */
-        }
-        return null;
+
+            return null;
     }
+
+
 
     @Override
     public String getBotName() {

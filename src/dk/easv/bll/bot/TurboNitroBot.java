@@ -1,5 +1,6 @@
 package dk.easv.bll.bot;
 
+import dk.easv.bll.field.Field;
 import dk.easv.bll.field.IField;
 import dk.easv.bll.game.GameManager;
 import dk.easv.bll.game.GameState;
@@ -7,21 +8,26 @@ import dk.easv.bll.game.IGameState;
 import dk.easv.bll.move.IMove;
 import dk.easv.bll.move.Move;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class TurboNitroBot implements IBot {
-    private int winPoints = 10;
-    private int losePoints = -1;
-    private int minPoints = -10;
-    private int noPoints = -100;
+    private int winGamePoints = 100;
+    private int netrualPoints = 0;
+    private int winMacroBoardPoints = 1;
+    private int loseGamePoints = -100;
+    private int loseMacroBoardPoints = -1;
+    final int moveTimeMs = 1000;
+
+    public List<SimMove> simMoveList;
 
     private GameState currentState;
 
 
     @Override
     public IMove doMove(IGameState state) {
-        return null;
+        return calculateWinningMove(state, moveTimeMs);
     }
 
     public IMove doSimulatedMove(IMove move){
@@ -51,10 +57,36 @@ public class TurboNitroBot implements IBot {
             TurboNitroBot.GameSimulator simulator = createSimulator(state);
             IGameState gs = simulator.getCurrentState();
             List<IMove> moves = gs.getField().getAvailableMoves();
-            IMove randomMovePlayer = moves.get(rand.nextInt(moves.size()));
-            IMove winnerMove = randomMovePlayer;
+            IMove playerMove = moves.get(rand.nextInt(moves.size()));
+            IMove winnerMove = playerMove;
+            while (simulator.getGameOver()== GameOverState.Active){ // Game not ended
+                simulator.updateGame(playerMove);
+
+                // Opponent plays randomly
+                if (simulator.getGameOver()== GameOverState.Active){ // game still going
+                    moves = gs.getField().getAvailableMoves();
+                    IMove randomMoveOpponent = moves.get(rand.nextInt(moves.size()));
+                    simulator.updateGame(randomMoveOpponent);
+                }
+                if (simulator.getGameOver()== GameOverState.Active){ // game still going
+                    int k =0;
+                    moves = gs.getField().getAvailableMoves();
+                    for(int i = 0; i < moves.size(); i++){
+                        k++;
+                        Move simMoves = new Move(i,k);
+                        simulator.updateGame(simMoves);
+                    }
+                }
+
+            }
         }
         return null;
+    }
+
+    public void calculateWinnerMoves(List<IMove> moves){
+        for(int i = 0; i < moves.size(); i++){
+
+        }
     }
 
     public enum GameOverState {
@@ -75,6 +107,8 @@ public class TurboNitroBot implements IBot {
     }
 
 
+
+
     public String[][] getBoard(){
         String[][] board = currentState.getField().getBoard();
         return board;
@@ -84,6 +118,7 @@ public class TurboNitroBot implements IBot {
         String[][] macroBoard = currentState.getField().getMacroboard();
         return macroBoard;
     }
+
 
 
 
@@ -102,18 +137,26 @@ public class TurboNitroBot implements IBot {
 
     @Override
     public String getBotName() {
-        return "GodBot";
+        return "SUPER DISCO NITRO TURBO GUSTAV BOT";
     }
 
     public class GameSimulator {
 
         private int currentPlayer = 0;
-        private volatile TurboNitroBot.GameOverState gameOver = TurboNitroBot.GameOverState.Active;
+        private volatile GameOverState gameOver = GameOverState.Active;
 
         private IGameState currentState;
         public GameSimulator(IGameState currentState) {
             this.currentState = currentState;
         }
+        public void setGameOver(GameOverState state) {
+            gameOver = state;
+        }
+
+        public TurboNitroBot.GameOverState getGameOver() {
+            return gameOver;
+        }
+
 
 
 
@@ -160,9 +203,61 @@ public class TurboNitroBot implements IBot {
             if (currentState.getMoveNumber() % 2 == 0) {
                 currentState.setRoundNumber(currentState.getRoundNumber() + 1);
             }
-           // checkAndUpdateIfWin(move);
+            checkAndUpdateIfWin(move);
             updateMacroboard(move);
         }
+
+        private void checkAndUpdateIfWin(IMove move) {
+            String[][] macroBoard = currentState.getField().getMacroboard();
+            int macroX = move.getX() / 3;
+            int macroY = move.getY() / 3;
+
+            if (macroBoard[macroX][macroY].equals(IField.EMPTY_FIELD) ||
+                    macroBoard[macroX][macroY].equals(IField.AVAILABLE_FIELD)) {
+
+                String[][] board = getCurrentState().getField().getBoard();
+
+                if (isWin(board, move, "" + currentPlayer))
+                    macroBoard[macroX][macroY] = currentPlayer + "";
+                else if (isTie(board, move))
+                    macroBoard[macroX][macroY] = "TIE";
+
+                //Check macro win
+                if (isWin(macroBoard, new Move(macroX, macroY), "" + currentPlayer))
+                    gameOver = GameOverState.Win;
+                else if (isTie(macroBoard, new Move(macroX, macroY)))
+                    gameOver = GameOverState.Tie;
+            }
+
+        }
+
+        private boolean isTie(String[][] board, IMove move) {
+            int localX = move.getX() % 3;
+            int localY = move.getY() % 3;
+            int startX = move.getX() - (localX);
+            int startY = move.getY() - (localY);
+
+            for (int i = startX; i < startX + 3; i++) {
+                for (int k = startY; k < startY + 3; k++) {
+                    if (board[i][k].equals(IField.AVAILABLE_FIELD) ||
+                            board[i][k].equals(IField.EMPTY_FIELD))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        public Boolean updateGame(IMove move) {
+            if (!verifyMoveLegality(move))
+                return false;
+
+            updateBoard(move);
+            currentPlayer = (currentPlayer + 1) % 2;
+
+            return true;
+        }
+
+
 
         public boolean isWin(String[][] board, IMove move, String currentPlayer) {
             int localX = move.getX() % 3;
@@ -207,9 +302,7 @@ public class TurboNitroBot implements IBot {
             return false;
         }
 
-        public void setGameOver(TurboNitroBot.GameOverState state) {
-            gameOver = state;
-        }
+
         public void setCurrentPlayer(int player) {
             currentPlayer = player;
         }

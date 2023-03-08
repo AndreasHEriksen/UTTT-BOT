@@ -30,13 +30,6 @@ public class TurboNitroBot implements IBot {
         return calculateWinningMove(state, moveTimeMs);
     }
 
-    public IMove doSimulatedMove(IMove move){
-        if(verifyMoveLegality(move)){
-            simulateGame(move);
-            return move;
-        }
-        return null;
-    }
 
     private TurboNitroBot.GameSimulator createSimulator(IGameState state) {
         TurboNitroBot.GameSimulator simulator = new TurboNitroBot.GameSimulator(new GameState());
@@ -68,42 +61,42 @@ public class TurboNitroBot implements IBot {
                     IMove randomMoveOpponent = moves.get(rand.nextInt(moves.size()));
                     simulator.updateGame(randomMoveOpponent);
                 }
-                if (simulator.getGameOver()== GameOverState.Active){ // game still going
-                    int k =0;
+                if (simulator.getGameOver()== GameOverState.Active) { // game still going
+                    int k = 0;
+                    int i = 0;
                     moves = gs.getField().getAvailableMoves();
-                    for(int i = 0; i < moves.size(); i++){
+                    i++;
+                    Move simMoves = new Move(i, k);
+                    simulator.updateGame(simMoves);
+                    if(i == 2){
+                        i = 0;
                         k++;
-                        Move simMoves = new Move(i,k);
-                        simulator.updateGame(simMoves);
                     }
+                    if (simulator.getGameOver()== GameOverState.Win){
+                        //System.out.println("Found a win, :)");
+                        return simMoves;// Hint you could maybe save multiple games and pick the best? Now it just returns at a possible victory
+                    }
+
+
+                    if (simulator.getGameOver()== GameOverState.Win){
+                        //System.out.println("Found a win, :)");
+                        return winnerMove; // Hint you could maybe save multiple games and pick the best? Now it just returns at a possible victory
+                    }
+
                 }
 
             }
         }
-        return null;
+        List<IMove> moves = state.getField().getAvailableMoves();
+        IMove randomMovePlayer = moves.get(rand.nextInt(moves.size()));
+        return randomMovePlayer;
     }
 
-    public void calculateWinnerMoves(List<IMove> moves){
-        for(int i = 0; i < moves.size(); i++){
-
-        }
-    }
 
     public enum GameOverState {
         Active,
         Win,
         Tie
-    }
-
-    public String[][] simulateGame(IMove move){
-        String[][] simulatedBoard = getBoard();
-        String[][] simulatedMacroBoard = getMacroBoard();
-        for(int i = 0; i < simulatedBoard.length; i++){
-            for (int k = 0;k < simulatedMacroBoard.length; k++){
-
-            }
-        }
-    return null;
     }
 
 
@@ -137,7 +130,7 @@ public class TurboNitroBot implements IBot {
 
     @Override
     public String getBotName() {
-        return "SUPER DISCO NITRO TURBO GUSTAV BOT";
+        return "Slowest fucking bot";
     }
 
     public class GameSimulator {
@@ -223,8 +216,10 @@ public class TurboNitroBot implements IBot {
                     macroBoard[macroX][macroY] = "TIE";
 
                 //Check macro win
-                if (isWin(macroBoard, new Move(macroX, macroY), "" + currentPlayer))
+                if (isWin(macroBoard, new Move(macroX, macroY), "" + currentPlayer)) {
+                    //simMoveList = new SimMove(macroX,macroY,caculatePoints)
                     gameOver = GameOverState.Win;
+                }
                 else if (isTie(macroBoard, new Move(macroX, macroY)))
                     gameOver = GameOverState.Tie;
             }
